@@ -1,0 +1,30 @@
+{
+  "config": {
+    "run_name": "test",
+    "out_dir": "./results",
+    "seed": 1623857729,
+    "device": null,
+    "bs_train": 128,
+    "bs_test": 32,
+    "batches": 100,
+    "epochs": 100,
+    "early_stopping": 3,
+    "checkpoints": null,
+    "lr": 0.001,
+    "reg": 0.001,
+    "filters_per_layer": [
+      32,
+      64
+    ],
+    "pool_every": 2,
+    "hidden_dims": [
+      100
+    ],
+    "model_type": "cnn",
+    "kw": {},
+    "layers_per_block": 2
+  },
+  "results": {
+    "num_epochs": 12,
+    "train_loss": [
+      
