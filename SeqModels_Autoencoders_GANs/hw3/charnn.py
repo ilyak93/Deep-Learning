@@ -114,7 +114,10 @@ def chars_to_labelled_samples(text: str, char_to_idx: dict, seq_len: int,
     #  3. Create the labels tensor in a similar way and convert to indices.
     #  Note that no explicit loops are required to implement this function.
     # ====== YOUR CODE: ======
-    raise NotImplementedError()
+    N, V = (len(text)-1) // seq_len, len(char_to_idx) 
+    M = N * seq_len
+    samples = chars_to_onehot(text[:M], char_to_idx).view(N, seq_len, V).to(device=device)
+    labels = torch.tensor([char_to_idx[char] for char in text[1:M + 1]]).view(N, seq_len).to(device=device)
     # ========================
     return samples, labels
 
