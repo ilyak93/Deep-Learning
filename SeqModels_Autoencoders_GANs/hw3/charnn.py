@@ -251,7 +251,32 @@ class MultilayerGRU(nn.Module):
         #      then call self.register_parameter() on them. Also make
         #      sure to initialize them. See functions in torch.nn.init.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        cur_dim = in_dim
+        for i in range(self.n_layers):
+                        # z
+            cur_layer = [torch.nn.Linear(cur_dim, h_dim, bias=False),
+                         torch.nn.Linear(h_dim, h_dim),
+                         torch.nn.Sigmoid(),
+                         # r
+                         torch.nn.Linear(cur_dim, h_dim, bias=False),
+                         torch.nn.Linear(h_dim, h_dim),
+                         torch.nn.Sigmoid(),
+                         # g
+                         torch.nn.Linear(cur_dim, h_dim, bias=False),
+                         torch.nn.Linear(h_dim, h_dim),
+                         torch.nn.Tanh(),
+
+                         torch.nn.Dropout(dropout)]
+
+            self.layer_params.append(cur_layer)
+
+            for module_idx in range(len(cur_layer)):
+                self.add_module(str(i) + "_" + str(module_idx), cur_layer[module_idx])
+
+            cur_dim = h_dim
+        # out
+        self.out_layer = torch.nn.Linear(h_dim, out_dim)
+        self.add_module('Out', self.out_layer)
         # ========================
 
     def forward(self, input: Tensor, hidden_state: Tensor = None):
@@ -288,6 +313,17 @@ class MultilayerGRU(nn.Module):
         #  Tip: You can use torch.stack() to combine multiple tensors into a
         #  single tensor in a differentiable manner.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        layer_output = torch.zeros(batch_size, seq_len, self.out_dim, dtype=input.dtype, device=input.device)
+        for i in range(seq_len):
+            prev_layer_output = input[:, i, :]
+            for layer_num, layer in enumerate(self.layer_params):
+                hidden_state = layer_states[layer_num]
+                Z = layer[2](layer[0](prev_layer_output) + layer[1](hidden_state))
+                R = layer[5](layer[3](prev_layer_output) + layer[4](hidden_state))
+                G = layer[8](layer[6](prev_layer_output) + layer[7](R * hidden_state))
+                layer_states[layer_num] = layer[9](Z * hidden_state + (torch.ones_like(Z) - Z) * G)
+                prev_layer_output = layer_states[layer_num]
+            layer_output[:, i, :] = self.out_layer(prev_layer_output)
+        hidden_state = torch.stack(layer_states, dim=1)
         # ========================
         return layer_output, hidden_state
