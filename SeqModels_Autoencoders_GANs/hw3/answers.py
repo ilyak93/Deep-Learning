@@ -33,7 +33,8 @@ def part1_generation_params():
     temperature = .0001
     # TODO: Tweak the parameters to generate a literary masterpiece.
     # ====== YOUR CODE: ======
-    raise NotImplementedError()
+    temperature = 0.4
+    start_seq = 'Act I: To be or not to be, is that the question?'
     # ========================
     return start_seq, temperature
 
