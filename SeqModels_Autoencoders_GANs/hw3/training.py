@@ -86,7 +86,25 @@ class Trainer(abc.ABC):
             #  - Implement early stopping. This is a very useful and
             #    simple regularization technique that is highly recommended.
             # ====== YOUR CODE: ======
-            raise NotImplementedError()
+            train_result = self.train_epoch(dl_train, verbose=verbose, **kw)
+            train_acc.append(train_result.accuracy.item())
+            train_loss.append((sum(train_result.losses)/len(train_result.losses)).item())
+
+            test_result = self.test_epoch(dl_test, verbose=verbose, **kw)
+            test_acc.append(test_result.accuracy.item())
+            test_loss.append((sum(test_result.losses)/len(test_result.losses)).item())
+
+            # Early Stopping
+            if best_acc is None or (test_acc[-1] > best_acc):
+                best_acc = test_acc[-1]
+                epochs_without_improvement = 0
+            elif test_acc[-1] < best_acc:
+                epochs_without_improvement += 1
+            elif test_acc[-1] == best_acc:
+                epochs_without_improvement += 0.3
+                
+            if early_stopping and epochs_without_improvement >= early_stopping:
+                break
             # ========================
 
             # Save model checkpoint if requested
@@ -215,7 +233,7 @@ class RNNTrainer(Trainer):
     def test_epoch(self, dl_test: DataLoader, **kw):
         # TODO: Implement modifications to the base method, if needed.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        self.hidden_state = None
         # ========================
         return super().test_epoch(dl_test, **kw)
 
@@ -269,7 +287,19 @@ class RNNTrainer(Trainer):
             #  - Loss calculation
             #  - Calculate number of correct predictions
             # ====== YOUR CODE: ======
-            raise NotImplementedError()
+            batch_size = y.shape[0]
+            loss = torch.zeros(1).to(self.device)
+            num_correct = torch.zeros(1).to(self.device)
+
+            for batch_num in range(batch_size):
+                x_batch = x[batch_num, :, :].unsqueeze(0)
+                y_batch = y[batch_num, :]
+
+                output, self.hidden_state = self.model(x_batch, self.hidden_state)
+                prediction = torch.argmax(output[0, :, :], dim=1)
+                num_correct += torch.eq(prediction, y_batch).sum()
+
+                loss += self.loss_fn(output[0, :, :], y_batch)
             # ========================
 
         return BatchResult(loss.item(), num_correct.item() / seq_len)
