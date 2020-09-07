@@ -18,7 +18,7 @@ def part1_rnn_hyperparams():
     # ====== YOUR CODE: ======
     hypers['batch_size'] = 256
     hypers['seq_len'] = 64
-    hypers['h_dim'] = 256
+    hypers['h_dim'] = 1024
     hypers['n_layers'] = 3
     hypers['dropout'] = 0.25
     hypers['learn_rate'] = 0.001
