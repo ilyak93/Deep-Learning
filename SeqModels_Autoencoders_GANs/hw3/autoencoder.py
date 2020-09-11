@@ -62,7 +62,25 @@ class DecoderCNN(nn.Module):
         #  output should be a batch of images, with same dimensions as the
         #  inputs to the Encoder were.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        dropout = 0.2
+        kernel_size = 5
+        padding = 2
+        modules.append(nn.ConvTranspose2d(in_channels, 512, kernel_size=kernel_size, padding=padding))
+        modules.append(nn.Dropout(dropout))
+        modules.append(nn.LeakyReLU(negative_slope=0.2))
+        modules.append(nn.Upsample(scale_factor=2, mode='bilinear'))
+
+        modules.append(nn.ConvTranspose2d(512, 256, kernel_size=kernel_size, padding=padding))
+        modules.append(nn.Dropout(dropout))
+        modules.append(nn.LeakyReLU(negative_slope=0.2))
+
+        modules.append(nn.ConvTranspose2d(256, 128, kernel_size=kernel_size, padding=padding))
+        modules.append(nn.Dropout(dropout))
+        modules.append(nn.LeakyReLU(negative_slope=0.2))
+        modules.append(nn.Upsample(scale_factor=2, mode='bilinear'))
+
+        modules.append(nn.ConvTranspose2d(128, out_channels, kernel_size=kernel_size, padding=padding))
+        modules.append(nn.Dropout(dropout))
         # ========================
         self.cnn = nn.Sequential(*modules)
 
