@@ -19,7 +19,7 @@ class EncoderCNN(nn.Module):
         #  use pooling or only strides, use any activation functions,
         #  use BN or Dropout, etc.
         # ====== YOUR CODE: ======
-         dropout = 0.2
+        dropout = 0.2
         kernel_size = 5
         padding = 2
 
