@@ -19,27 +19,23 @@ class EncoderCNN(nn.Module):
         #  use pooling or only strides, use any activation functions,
         #  use BN or Dropout, etc.
         # ====== YOUR CODE: ======
-        dropout = 0.2
-        kernel_size = 5
-        padding = 2
 
-        modules.append(nn.Conv2d(in_channels, 128, kernel_size=kernel_size, padding=padding))
-        modules.append(nn.Dropout(dropout))
-        modules.append(nn.LeakyReLU(negative_slope=0.2))
-        modules.append(nn.MaxPool2d(3, stride=2, padding=1))
-
-        modules.append(nn.Conv2d(128, 256, kernel_size=kernel_size, padding=padding))
-        modules.append(nn.Dropout(dropout))
+        modules.append(nn.Conv2d(in_channels, 64, kernel_size=5, stride=2, padding=2))
+        modules.append(nn.BatchNorm2d(64))
         modules.append(nn.LeakyReLU(negative_slope=0.2))
 
-        modules.append(nn.Conv2d(256, 512, kernel_size=kernel_size, padding=padding))
-        modules.append(nn.Dropout(dropout))
+        modules.append(nn.Conv2d(64, 128, kernel_size=5, stride = 2, padding = 2))
+        modules.append(nn.BatchNorm2d(128))
         modules.append(nn.LeakyReLU(negative_slope=0.2))
-        modules.append(nn.MaxPool2d(3, stride=2, padding=1))
 
-        modules.append(nn.Conv2d(512, out_channels, kernel_size=kernel_size, padding=padding))
-        modules.append(nn.Dropout(dropout))
+        modules.append(nn.Conv2d(128, 256, kernel_size=5, stride=2, padding = 2))
+        modules.append(nn.BatchNorm2d(256))
         modules.append(nn.LeakyReLU(negative_slope=0.2))
+
+        modules.append(nn.Conv2d(256, out_channels, kernel_size=5, stride=2, padding = 2))
+        modules.append(nn.BatchNorm2d(out_channels))
+        modules.append(nn.LeakyReLU(negative_slope=0.2))
+
         # ========================
         self.cnn = nn.Sequential(*modules)
 
@@ -62,25 +58,21 @@ class DecoderCNN(nn.Module):
         #  output should be a batch of images, with same dimensions as the
         #  inputs to the Encoder were.
         # ====== YOUR CODE: ======
-        dropout = 0.2
-        kernel_size = 5
-        padding = 2
-        modules.append(nn.ConvTranspose2d(in_channels, 512, kernel_size=kernel_size, padding=padding))
-        modules.append(nn.Dropout(dropout))
-        modules.append(nn.LeakyReLU(negative_slope=0.2))
-        modules.append(nn.Upsample(scale_factor=2, mode='bilinear'))
-
-        modules.append(nn.ConvTranspose2d(512, 256, kernel_size=kernel_size, padding=padding))
-        modules.append(nn.Dropout(dropout))
+        modules.append(nn.ConvTranspose2d(in_channels, 256, kernel_size=5, stride=2, padding=1, output_padding=0))
+        modules.append(nn.BatchNorm2d(256))
         modules.append(nn.LeakyReLU(negative_slope=0.2))
 
-        modules.append(nn.ConvTranspose2d(256, 128, kernel_size=kernel_size, padding=padding))
-        modules.append(nn.Dropout(dropout))
+        modules.append(nn.ConvTranspose2d(256, 128, kernel_size=5, stride=2, padding = 2, output_padding=0))
+        modules.append(nn.BatchNorm2d(128))
         modules.append(nn.LeakyReLU(negative_slope=0.2))
-        modules.append(nn.Upsample(scale_factor=2, mode='bilinear'))
 
-        modules.append(nn.ConvTranspose2d(128, out_channels, kernel_size=kernel_size, padding=padding))
-        modules.append(nn.Dropout(dropout))
+        modules.append(nn.ConvTranspose2d(128, 64, kernel_size=4, stride=2, padding = 2, output_padding=0))
+        modules.append(nn.BatchNorm2d(64))
+        modules.append(nn.LeakyReLU(negative_slope=0.2))
+
+        modules.append(nn.ConvTranspose2d(64, out_channels, kernel_size=5, stride=2, padding=2, output_padding=1))
+        modules.append(nn.BatchNorm2d(out_channels))
+
         # ========================
         self.cnn = nn.Sequential(*modules)
 
@@ -108,8 +100,11 @@ class VAE(nn.Module):
 
         # TODO: Add more layers as needed for encode() and decode().
         # ====== YOUR CODE: ======
+
+        self.n_features = n_features
+
         self.mu_layer = nn.Linear(n_features, z_dim)
-        self.sigma_layer = nn.Linear(n_features, z_dim)
+        self.log_sigma_layer = nn.Linear(n_features, z_dim)
         self.z_to_h = nn.Linear(z_dim, n_features)
         # ========================
 
@@ -131,12 +126,22 @@ class VAE(nn.Module):
         #     log_sigma2 (mean and log variance) of q(Z|x).
         #  2. Apply the reparametrization trick to obtain z.
         # ====== YOUR CODE: ======
-        h = self.features_encoder(x).view(x.shape[0], -1)
-        
-        mu = self.mu_layer(h).view(1, -1)
-        log_sigma2 = self.sigma_layer(h).view(1, -1)
-        
-        z = mu + torch.randn(*mu.size(), device=log_sigma2.device) * ((0.5*(log_sigma2)).exp_())
+
+        # Get features from input and reshape
+        x = self.features_encoder(x).view(-1, self.n_features)
+
+        # Get mean and log of variance
+        mu = self.mu_layer(x)
+        log_sigma2 = self.log_sigma_layer(x)
+
+        # Sample a vector from the standard normal distribution
+        normal_vec = torch.randn_like(mu)
+
+        # Calculate the standard deviation
+        std = log_sigma2.mul(0.5).exp_()
+
+        # Reparametrization trick
+        z = mu + std*normal_vec
         # ========================
 
         return z, mu, log_sigma2
@@ -147,8 +152,12 @@ class VAE(nn.Module):
         #  1. Convert latent z to features h with a linear layer.
         #  2. Apply features decoder.
         # ====== YOUR CODE: ======
-        h = self.z_to_h(z.view(-1, self.z_dim))
-        x_rec = self.features_decoder(h.view(-1, *self.features_shape))
+
+        # Fully connected layer and reshaping to cnn shape
+        h = self.z_to_h(z).view([-1, *self.features_shape])
+
+        # Decode features
+        x_rec = self.features_decoder(h)
         # ========================
 
         # Scale to [-1, 1] (same dynamic range as original images).
@@ -178,6 +187,7 @@ class VAE(nn.Module):
     def forward(self, x):
         z, mu, log_sigma2 = self.encode(x)
         return self.decode(z), mu, log_sigma2
+
 
 
 def vae_loss(x, xr, z_mu, z_log_sigma2, x_sigma2):
