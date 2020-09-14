@@ -84,7 +84,30 @@ class Generator(nn.Module):
         #  section or implement something new.
         #  You can assume a fixed image size.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        self.featuremap_size = featuremap_size
+
+        # First layer - fully connected
+        self.fc = nn.Linear(z_dim, featuremap_size * featuremap_size * 1024)                
+
+        # CNN part
+        modules = []
+
+        modules.append(nn.ConvTranspose2d(1024, 512, kernel_size=5, stride=2, padding=2, output_padding=1))
+        modules.append(nn.BatchNorm2d(512))
+        modules.append(nn.LeakyReLU())
+
+        modules.append(nn.ConvTranspose2d(512, 256, kernel_size=5, stride=2, padding=2, output_padding=1))
+        modules.append(nn.BatchNorm2d(256))
+        modules.append(nn.LeakyReLU())
+
+        modules.append(nn.ConvTranspose2d(256, 128, kernel_size=5, stride=2, padding=2, output_padding=1))
+        modules.append(nn.BatchNorm2d(128))
+        modules.append(nn.LeakyReLU())
+
+        modules.append(nn.ConvTranspose2d(128, out_channels, kernel_size=5, stride=2, padding=2, output_padding=1))
+        modules.append(nn.Tanh())
+
+        self.cnn = nn.Sequential(*modules)
         # ========================
 
     def sample(self, n, with_grad=False):
@@ -101,7 +124,9 @@ class Generator(nn.Module):
         #  Generate n latent space samples and return their reconstructions.
         #  Don't use a loop.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        z = self.fc(z)
+        z = z.view(-1, 1024, self.featuremap_size, self.featuremap_size)
+        x = self.cnn(z)
         # ========================
         return samples
 
