@@ -21,7 +21,34 @@ class Discriminator(nn.Module):
         #  You can then use either an affine layer or another conv layer to
         #  flatten the features.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        modules = []
+
+        modules.append(nn.Conv2d(in_size[0], 128, kernel_size=5, stride=2, padding=2))
+        modules.append(nn.BatchNorm2d(128))
+        modules.append(nn.LeakyReLU())
+
+        modules.append(nn.Conv2d(128, 256, kernel_size=5, stride=2, padding=2))
+        modules.append(nn.BatchNorm2d(256))
+        modules.append(nn.LeakyReLU())
+
+        modules.append(nn.Conv2d(256, 512, kernel_size=5, stride=2, padding=2))
+        modules.append(nn.BatchNorm2d(512))
+        modules.append(nn.LeakyReLU())
+
+        modules.append(nn.Conv2d(512, 1024, kernel_size=5, stride=2, padding=2))
+        modules.append(nn.BatchNorm2d(1024))
+        modules.append(nn.LeakyReLU())
+
+        self.cnn = nn.Sequential(*modules)
+
+        # Fully connected part
+        modules = []
+
+        modules.append(nn.Linear(int((self.in_size[1] / 16) * (self.in_size[2] / 16)) * 1024, 128))
+        modules.append(nn.LeakyReLU())
+        modules.append(nn.Linear(128, 1))
+
+        self.fc = nn.Sequential(*modules)
         # ========================
 
     def forward(self, x):
@@ -34,7 +61,9 @@ class Discriminator(nn.Module):
         #  No need to apply sigmoid to obtain probability - we'll combine it
         #  with the loss due to improved numerical stability.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        y = self.cnn(x)
+        y = y.view(-1, y.size(1)*y.size(2)*y.size(3))
+        y = self.fc(y)
         # ========================
         return y
 
