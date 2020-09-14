@@ -124,9 +124,7 @@ class Generator(nn.Module):
         #  Generate n latent space samples and return their reconstructions.
         #  Don't use a loop.
         # ====== YOUR CODE: ======
-        z = self.fc(z)
-        z = z.view(-1, 1024, self.featuremap_size, self.featuremap_size)
-        x = self.cnn(z)
+        
         # ========================
         return samples
 
@@ -140,7 +138,9 @@ class Generator(nn.Module):
         #  Don't forget to make sure the output instances have the same
         #  dynamic range as the original (real) images.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        z = self.fc(z)
+        z = z.view(-1, 1024, self.featuremap_size, self.featuremap_size)
+        x = self.cnn(z)
         # ========================
         return x
 
