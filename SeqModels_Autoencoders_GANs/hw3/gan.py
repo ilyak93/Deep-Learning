@@ -270,7 +270,14 @@ def save_checkpoint(gen_model, dsc_losses, gen_losses, checkpoint_file):
     #  You should decide what logic to use for deciding when to save.
     #  If you save, set saved to True.
     # ====== YOUR CODE: ======
-    raise NotImplementedError()
+    avg_gen_dsc_losses = [(dsc_loss+gen_loss)/2 for dsc_loss, gen_loss in zip(dsc_losses, gen_losses)]
+
+    if ((gen_losses[-1]+dsc_losses[-1])/2 == min(avg_gen_dsc_losses) or len(gen_losses) == 1):
+        saved = True
+
+    # Save model checkpoint if requested
+    if saved == True and checkpoint_file is not None:
+        torch.save(gen_model, checkpoint_file)
     # ========================
 
     return saved
