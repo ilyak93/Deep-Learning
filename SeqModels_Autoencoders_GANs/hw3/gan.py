@@ -165,7 +165,15 @@ def discriminator_loss_fn(y_data, y_generated, data_label=0, label_noise=0.0):
     #  Implement the discriminator loss.
     #  See pytorch's BCEWithLogitsLoss for a numerically stable implementation.
     # ====== YOUR CODE: ======
-    raise NotImplementedError()
+    
+    # Create targets (labels) of generated images and dataset images, with noise
+    noisy_y_data = data_label + (torch.rand_like(y_data, device = y_data.device) * label_noise - label_noise / 2)
+    noisy_y_generated = (1-data_label)+(torch.rand_like(y_generated, device = y_generated.device) * label_noise - label_noise / 2)
+    # BCE loss with Sigmoid
+    loss_fn = nn.BCEWithLogitsLoss()
+    # Compute loss with respect to generated data and with respect to dataset data
+    loss_data = loss_fn(y_data, noisy_y_data)
+    loss_generated = loss_fn(y_generated, noisy_y_generated)
     # ========================
     return loss_data + loss_generated
 
