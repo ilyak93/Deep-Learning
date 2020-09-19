@@ -43,12 +43,18 @@ part1_q1 = r"""
 **Your answer:**
 
 
-Write your answer using **markdown** and $\LaTeX$:
-```python
-# A code block
-a = 2
-```
-An equation: $e^{i\pi} -1 = 0$
+There several main reasons to split corpus into sequences:
+
+1.  Different texts are in different lengths. When using a fixed (relatively small) sequence length
+    we can make sure that our architecture is not text-dependent. This is similar to working with batches.
+2.  We'd wish that the network will resolve connections between words in many contexts instead of "remembering"
+    large amounts of texts. This improves network generalization and provides better quality leaning 
+3.  To support parallelism. In this homework we were training in parallel and to do so we count on the
+    sequence length to be of fixed sizes.
+4.  From a purely technical point of view: it is not realistic to back-propagate through very big net depths.
+    We're limited in computing resources and because of that we limit back-propagating into a fixed time length. 
+5.  It effectively reduces the dimension of the input to the network, thus
+	speeding the training process and allowing for more frequent updates of the parameters.
 
 """
 
@@ -56,12 +62,11 @@ part1_q2 = r"""
 **Your answer:**
 
 
-Write your answer using **markdown** and $\LaTeX$:
-```python
-# A code block
-a = 2
-```
-An equation: $e^{i\pi} -1 = 0$
+As written in q1, the network is able to resolve connections between letters, words, punctuation between different
+sequences. Instead of memorizing the network "learns" the rules of the language, meaning it can generalize without
+over-fitting the text, and that is because the hidden state is transferred
+between batches (it is only zeroed between epochs), thus, when a new batch is generated, it takes
+into account the "memory" of the previous batch, thus the network can generate any length new sequences. 
 
 """
 
@@ -69,25 +74,29 @@ part1_q3 = r"""
 **Your answer:**
 
 
-Write your answer using **markdown** and $\LaTeX$:
-```python
-# A code block
-a = 2
-```
-An equation: $e^{i\pi} -1 = 0$
-
+In order for the network to be able to learn continues sentences we need to maintain sequence order in different
+batches, or else every batch would provide a sequence which is not related at all to the last sequence. 
+tIn other words, there is a dependency between the batches (as the text is split between
+them), and the hidden state is transferred between them. In this case, we don't want to shuffle the batches
+so that we don't lose the information of the connection between them.
 """
 
 part1_q4 = r"""
 **Your answer:**
 
 
-Write your answer using **markdown** and $\LaTeX$:
-```python
-# A code block
-a = 2
-```
-An equation: $e^{i\pi} -1 = 0$
+
+1.	When training we wish to learn probability distribution for the next predicted character. Therefore we do not
+    need to emphasize small differences yet. When sampling we wish that characters with slightly higher probability
+    will have a really high chance of being predicted. Since softmax often provides almost uniformly distribution
+    for similar scores we use temperature to avoid that.
+    
+2.  As T grows the distribution is being more uniform. When "T is infinity" the distribution will be pure uniform,
+	in which case the generated text will be almost random.
+
+3.  As T becomes smaller the differences between original scores are being larger. When T is "almost 0" one character
+    will have almost probability of 1.0 to be predicted while all of the others will have probability of almost 0 to be
+    predicted.  
 
 """
 # ==============
