@@ -223,7 +223,7 @@ question section, we could control the variance, and if we would take a variance
 face, but still the VAE images have not good details. 
 The GAN's images are sharper and the face features are clearer, i.e there are some times
 we could better recognize the face impression or see details never seen on the VAE images, such as mouth with teeth or
-more accurate look of the eyes and e.t.c.
+more accurate look of the eyes or maybe some clothes details.
 These changes are related mainly to the loss differences. While in the VAE, the loss has the data loss term and thus
 genereated images are more realistic, in the GAN the losses are related to the discriminators ability to 
 discriminate real from fake images, in which case it is more possible that the loss would decrease even if
