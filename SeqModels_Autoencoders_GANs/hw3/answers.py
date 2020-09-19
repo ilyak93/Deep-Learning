@@ -119,13 +119,21 @@ def part2_vae_hyperparams():
 part2_q1 = r"""
 **Your answer:**
 
+Intuitively the x_sigma2 is the variance around the mean vector in the latent space.
+This means that as x_sigma2 gets bigger similar photos from the instance space will be
+mapped to more different points in the latent space. In this setting not only a single
+point from the latent space will be decoded to a certain photo in the instance space,
+but all of the pointer in the "area" around it will be also mapped in to similar photos
+in the instance space, so the generated images more resemble the dataset images, 
+and we see less variety in poses and backgrounds but a better quality.
 
-Write your answer using **markdown** and $\LaTeX$:
-```python
-# A code block
-a = 2
-```
-An equation: $e^{i\pi} -1 = 0$
+The opposite setting, in which s_sigma2 is small, only a small "area" in the latent
+space will be mapped to similar photos in the instance space. This, intuitively, 
+reduces the mapping "area" between a photo in the instance space to a point in the
+latent space. In another view, it causes the generated images to have more randomness, 
+thus in these cases we see more variety of poses and backgrounds.
+
+In conclusion, the hyperparameter $\sigma^2$ control the tradeoff between the reconstruction loss and the KLD loss.
 
 """
 
@@ -133,12 +141,27 @@ part2_q2 = r"""
 **Your answer:**
 
 
-Write your answer using **markdown** and $\LaTeX$:
-```python
-# A code block
-a = 2
-```
-An equation: $e^{i\pi} -1 = 0$
+1.  The purpose of the reconstruction loss is to measure how well the encoder-decoder reconstructs
+    images. In other words, what is the "difference" between IMG and ENCODE(DECODE(IMG)), while IMG
+    is a photo from the instance space.
+	in other words, due to the reconstruction loss we are able to maximize the probability that x=xr, 
+	i.e increase the probability that the generated image will resemble the images from the dataset.
+    
+    The KL loss is a measure to define similarity between two probability distributions in the latent
+    space. We use the KL loss to measure the difference between our probability distribution in the latent
+    space and a normal distribution. The purpose of this loss is to ensure that the distribution in the
+    latent space is "close to being normal" (in the sense of KL divergence), or to ensure that two points
+    that are close to each other in the latent space will be mapped in to similar points in the instance
+    space. 
+    
+2.  As mentioned above the KL loss enforces the weights of the encoder to generate close to normal distribution
+    in the latent space. This is explained above. 
+	We can also say that the KL divergence loss purpose is to minimize the 'distance' (in KL manner) between the approximated posterior
+	distribution of the latent space and the prior distribution, p(Z), **thus it controls the randomness in the generated
+	images**.
+
+3.  We wish to avoid the case in which when we select two close points in the latent space we get totally different
+    george bushes. This enables the latent space mapping to the instance space to be smooth.
 
 """
 
