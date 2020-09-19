@@ -185,12 +185,13 @@ part3_q1 = r"""
 **Your answer:**
 
 
-Write your answer using **markdown** and $\LaTeX$:
-```python
-# A code block
-a = 2
-```
-An equation: $e^{i\pi} -1 = 0$
+When training one component we assume that the other one is given. Meaning that while training the Discriminator we assume
+a given generator, and while training the generator we assume a given discriminator.
+Thus, during training, when training the discriminator specifically, we want to discard the gradients when sampling from
+the GAN, because we don't want the gradients to backpropagate through the discriminator loss, so it will have an 
+effect on the weights of the generator, altough we wish to train the discriminator and the generator seperatly.
+When we train the generator, we maintain the gradients as the sampler belong to the generator, and we want to
+modify the generator weights according to the sampled vector.
 
 """
 
@@ -198,12 +199,16 @@ part3_q2 = r"""
 **Your answer:**
 
 
-Write your answer using **markdown** and $\LaTeX$:
-```python
-# A code block
-a = 2
-```
-An equation: $e^{i\pi} -1 = 0$
+1.  No. Since we test/train every component (discriminator/generator) alone, meaning we assume that the other one is given,
+    it is not enough to have a generator with a low loss value if our discriminator is with very high loss value, meaning it's
+    not accurate. Since the discriminator is not accurate, the loss and accuracy for the generator is not accurate as well!
+    In other words: we can get a really good results based on a bad discriminator which basically says that this score is
+    useless and does not reflect reality.
+
+2.  When the generator's loss is becoming smaller, meaning that the generator becomes better, we expect the discriminator
+    to improve as well since its performance depends on how well the generator is. When the generator improves but the
+    discriminator is not we can conclude that the discriminator does not perform well and the generator uses this fact
+    to learn how to fool it to predict similarities even when it shouldn't.
 
 """
 
@@ -211,12 +216,19 @@ part3_q3 = r"""
 **Your answer:**
 
 
-Write your answer using **markdown** and $\LaTeX$:
-```python
-# A code block
-a = 2
-```
-An equation: $e^{i\pi} -1 = 0$
+As can be seen from the results, the images generated from the VAE seems more blurred than those generated from
+the GAN, but on the other hand - they seem more 'real' and they are better in perceptation of the general and undetailed shapes,
+as in the GAN we can observe a lot of deformations and unrealistic patches. In the VAE images as was allready mentioned in the previous 
+question section, we could control the variance, and if we would take a variance of 0.01 we could even better see the general form Bush's 
+face, but still the VAE images have not good details. 
+The GAN's images are sharper and the face features are clearer, i.e there are some times
+we could better recognize the face impression or see details never seen on the VAE images, such as mouth with teeth or
+more accurate look of the eyes and e.t.c.
+These changes are related mainly to the loss differences. While in the VAE, the loss has the data loss term and thus
+genereated images are more realistic, in the GAN the losses are related to the discriminators ability to 
+discriminate real from fake images, in which case it is more possible that the loss would decrease even if
+the images has unrealistic features, but this loss forces to generator to generate sharper images in which
+the face could be seen more clearly.
 
 """
 
