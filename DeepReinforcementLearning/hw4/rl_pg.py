@@ -101,7 +101,9 @@ class PolicyAgent(object):
         #  Generate the distribution as described above.
         #  Notice that you should use p_net for *inference* only.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+                with torch.no_grad():
+            output = self.p_net(self.curr_state)
+            actions_proba = nn.Softmax(dim=0).forward(output)
         # ========================
 
         return actions_proba
@@ -123,7 +125,17 @@ class PolicyAgent(object):
         #  - Generate and return a new experience.
         # ====== YOUR CODE: ======
 
-        raise NotImplementedError()
+        actions_probs = self.current_action_distribution()
+        action = torch.distributions.categorical.Categorical(probs=actions_probs).sample().item()
+
+        # Perform the selected action on the environment to get a reward and a new observation.
+        next_state, reward, is_done, _ = self.env.step(action)
+        next_state = torch.tensor(next_state, device=self.device)
+        self.curr_episode_reward += reward
+
+        experience = Experience(self.curr_state, action, reward, is_done)
+
+        self.curr_state = next_state
 
         # ========================
         if is_done:
@@ -151,7 +163,13 @@ class PolicyAgent(object):
             #  Create an agent and play the environment for one episode
             #  based on the policy encoded in p_net.
             # ====== YOUR CODE: ======
-            raise NotImplementedError()
+            is_done = False
+            agent = cls(env, p_net, device)
+            while not is_done:
+                n_steps += 1
+                exp = agent.step()
+                reward += exp.reward
+                is_done = exp.is_done
             # ========================
         return env, n_steps, reward
 
