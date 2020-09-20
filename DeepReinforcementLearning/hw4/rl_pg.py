@@ -445,7 +445,17 @@ class PolicyTrainer(object):
         #   - Backprop.
         #   - Update model parameters.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        self.optimizer.zero_grad()
+        action_scores = self.model(batch.states)
+        total_loss = torch.tensor(0.0)
+
+        for loss_fn in self.loss_functions:
+            cur_loss, cur_loss_dict = loss_fn(batch, action_scores)
+            total_loss += cur_loss
+            losses_dict.update(cur_loss_dict)
+
+        total_loss.backward()
+        self.optimizer.step()
         # ========================
 
         return total_loss, losses_dict
