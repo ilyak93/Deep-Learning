@@ -20,7 +20,12 @@ def part1_pg_hyperparams():
     # TODO: Tweak the hyperparameters if needed.
     #  You can also add new ones if you need them for your model's __init__.
     # ====== YOUR CODE: ======
-    raise NotImplementedError()
+    hp = dict(batch_size=32,
+              gamma=0.99,
+              beta=0.5,
+              learn_rate=1e-2,
+              eps=1e-8,
+              )
     # ========================
     return hp
 

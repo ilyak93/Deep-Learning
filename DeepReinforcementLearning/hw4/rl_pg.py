@@ -29,13 +29,26 @@ class PolicyNet(nn.Module):
 
         # TODO: Implement a simple neural net to approximate the policy.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+         modules = []
+
+        if isinstance(in_features, tuple) or isinstance(in_features, list):
+            in_features = in_features[0]
+
+        sizes = [in_features, 64, 32]
+
+        for i in range(len(sizes) - 1):
+            modules.append(nn.Linear(sizes[i], sizes[i + 1]))
+            modules.append(nn.ReLU())
+
+        modules.append(nn.Linear(sizes[-1], out_actions))
+
+        self.mlp = nn.Sequential(*modules)
         # ========================
 
     def forward(self, x):
         # TODO: Implement a simple neural net to approximate the policy.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        action_scores = self.mlp(x)
         # ========================
         return action_scores
 
@@ -50,7 +63,8 @@ class PolicyNet(nn.Module):
         """
         # TODO: Implement according to docstring.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        in_features = env.observation_space.shape
+        net = PolicyNet(in_features, 4, **kw)
         # ========================
         return net.to(device)
 
