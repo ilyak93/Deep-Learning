@@ -29,7 +29,7 @@ class PolicyNet(nn.Module):
 
         # TODO: Implement a simple neural net to approximate the policy.
         # ====== YOUR CODE: ======
-         modules = []
+        modules = []
 
         if isinstance(in_features, tuple) or isinstance(in_features, list):
             in_features = in_features[0]
@@ -101,7 +101,7 @@ class PolicyAgent(object):
         #  Generate the distribution as described above.
         #  Notice that you should use p_net for *inference* only.
         # ====== YOUR CODE: ======
-                with torch.no_grad():
+        with torch.no_grad():
             output = self.p_net(self.curr_state)
             actions_proba = nn.Softmax(dim=0).forward(output)
         # ========================
@@ -238,7 +238,10 @@ class BaselinePolicyGradientLoss(VanillaPolicyGradientLoss):
         #  Calculate the loss and baseline.
         #  Use the helper methods in this class as before.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        self.N = len(batch.q_vals)
+        
+        policy_weight, baseline = self._policy_weight(batch)
+        loss_p = self._policy_loss(batch, action_scores, (policy_weight - baseline))
         # ========================
         return loss_p, dict(loss_p=loss_p.item(), baseline=baseline.item())
 
@@ -247,7 +250,7 @@ class BaselinePolicyGradientLoss(VanillaPolicyGradientLoss):
         #  Calculate both the policy weight term and the baseline value for
         #  the PG loss with baseline.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        policy_weight, baseline = batch.q_vals, batch.q_vals.mean()
         # ========================
         return policy_weight, baseline
 
@@ -440,3 +443,4 @@ class PolicyTrainer(object):
         # ========================
 
         return total_loss, losses_dict
+
