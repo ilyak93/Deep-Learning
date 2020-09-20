@@ -141,7 +141,18 @@ class TrainBatchDataset(torch.utils.data.IterableDataset):
             #    by the agent.
             #  - Store Episodes in the curr_batch list.
             # ====== YOUR CODE: ======
-            raise NotImplementedError()
+            episode_reward = 0.0
+            episode_experiences = []
+            is_done = False
+            while not is_done:
+                exp = agent.step()
+                episode_experiences.append(exp)
+                episode_reward += exp.reward
+                is_done = exp.is_done
+
+            episode = Episode(episode_reward, episode_experiences)
+            curr_batch.append(episode)
+            
             # ========================
             if len(curr_batch) == self.episode_batch_size:
                 yield tuple(curr_batch)
