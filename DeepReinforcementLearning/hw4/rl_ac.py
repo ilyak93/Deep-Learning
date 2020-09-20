@@ -19,7 +19,8 @@ class AACPolicyNet(nn.Module):
         #  Implement a dual-head neural net to approximate both the
         #  policy and value. You can have a common base part, or not.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        self.policy = PolicyNet(in_features, out_actions, **kw)
+        self.value = PolicyNet(in_features, 1, **kw)
         # ========================
 
     def forward(self, x):
@@ -34,7 +35,8 @@ class AACPolicyNet(nn.Module):
         #  calculate both the action scores (policy) and the value of the
         #  given state.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        action_scores = self.policy(x)
+        state_values = self.value(x)
         # ========================
 
         return action_scores, state_values
@@ -49,7 +51,7 @@ class AACPolicyNet(nn.Module):
         """
         # TODO: Implement according to docstring.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        net = AACPolicyNet(env.observation_space.sample().shape, 4)
         # ========================
         return net.to(device)
 
@@ -59,7 +61,12 @@ class AACPolicyAgent(PolicyAgent):
     def current_action_distribution(self) -> torch.Tensor:
         # TODO: Generate the distribution as described above.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        with torch.no_grad():
+            output, _ = self.p_net(self.curr_state)
+
+        actions_proba = nn.Softmax(dim=0).forward(output)
+
+        #assert(all([num >= 0 for num in actions_proba]))
         # ========================
         return actions_proba
 
@@ -82,7 +89,19 @@ class AACPolicyGradientLoss(VanillaPolicyGradientLoss):
         #  advantage vector per state.
         #  Use the helper functions in this class and its base.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        self.N = len(batch.q_vals)
+        self.A = action_scores.shape[1]
+        state_values = state_values.squeeze(1)
+
+        from torch.nn.functional import log_softmax
+
+        action_log_probs = log_softmax(action_scores, dim=1)
+        action_actually_taken_probs = torch.gather(action_log_probs, dim=1, index=batch.actions.unsqueeze(1)).squeeze(1)
+
+        advantage = self._policy_weight(batch, state_values)
+        loss_v = self._value_loss(batch, state_values)
+        loss_p = torch.dot(action_actually_taken_probs, advantage) / -self.N
+
         # ========================
 
         loss_v *= self.delta
@@ -96,14 +115,16 @@ class AACPolicyGradientLoss(VanillaPolicyGradientLoss):
         #  Notice that we don't want to backprop errors from the policy
         #  loss into the state-value network.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        advantage = batch.q_vals - state_values
         # ========================
         return advantage
 
     def _value_loss(self, batch: TrainBatch, state_values: torch.Tensor):
         # TODO: Calculate the state-value loss.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        loss_v = state_values - batch.q_vals
+        loss_v = torch.mul(loss_v, loss_v)
+        loss_v = loss_v.sum() / self.N
         # ========================
         return loss_v
 
