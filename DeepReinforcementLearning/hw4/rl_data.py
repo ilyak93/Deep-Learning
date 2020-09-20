@@ -39,7 +39,22 @@ class Episode(object):
         #  Try to implement it in O(n) runtime, where n is the number of
         #  states. Hint: change the order.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        total_reward = 0
+        n = len(self.experiences)
+        gamma_vec = torch.ones(n)
+        for i in range(1, n):
+            gamma_vec[i:] *= gamma
+            
+        rewards = []
+        for i in range(n):
+            rewards.append(self.experiences[i].reward)
+    
+        rewards = torch.FloatTensor(rewards)
+        for i in range(1, n+1):
+            total_reward = torch.dot(gamma_vec[:i], rewards[n-i:])
+            qvals.append(total_reward)
+        
+        qvals.reverse()
         # ========================
         return qvals
 
