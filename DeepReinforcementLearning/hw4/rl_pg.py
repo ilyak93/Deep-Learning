@@ -64,6 +64,7 @@ class PolicyNet(nn.Module):
         # TODO: Implement according to docstring.
         # ====== YOUR CODE: ======
         in_features = env.observation_space.shape
+		# env.observation_space.sample()
         net = PolicyNet(in_features, 4, **kw)
         # ========================
         return net.to(device)
