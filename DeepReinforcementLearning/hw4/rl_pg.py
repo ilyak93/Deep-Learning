@@ -34,7 +34,7 @@ class PolicyNet(nn.Module):
         if isinstance(in_features, tuple) or isinstance(in_features, list):
             in_features = in_features[0]
 
-        sizes = [in_features, 64, 32]
+        sizes = [in_features, 64, 64]
 
         for i in range(len(sizes) - 1):
             modules.append(nn.Linear(sizes[i], sizes[i + 1]))
