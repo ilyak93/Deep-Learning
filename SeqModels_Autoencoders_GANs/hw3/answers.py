@@ -170,7 +170,7 @@ part2_q2 = r"""
 	images**.
 
 3.  We wish to avoid the case in which when we select two close points in the latent space we get totally different
-    george bushes. This enables the latent space mapping to the instance space to be smooth.
+    george bushes. This enables the latent space mapping to the instance space to be smooth
 
 """
 
